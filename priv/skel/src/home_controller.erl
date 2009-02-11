@@ -1,5 +1,5 @@
 %%
-%% Sample default "/" controller, implement this to your needs
+%% Sample default controller
 %%
 -module(home_controller,[Env]).
 
@@ -15,8 +15,6 @@ handle_request("show",[Year]) ->
 
 
 before_filter() ->
-    %% Shows how to potentially filter on certain actions in this
-    %% controller
     FilterOnly = ["show"],
     case lists:member(beepbeep_args:get_action(Env),FilterOnly) of
 	true ->

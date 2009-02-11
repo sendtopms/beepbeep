@@ -1,8 +1,3 @@
-%% @author Dave Bryson [http://weblog.miceda.org]
-%% @copyright Dave Bryson 2008-2009
-%% 
-%% Creates a MochiWeb Server with the BeepBeep hook
-%%
 -module(skel_web).
 -author('Dave Bryson <http://weblog.miceda.org>').
 
@@ -22,32 +17,14 @@ loop(Req) ->
     %% Setup env...
     InitialEnv = mochiweb_env:setup_environment(Req),
     Env = setup_session(Req,InitialEnv),
+    %%error_logger:info_report(Env),
     
-
-    %% Possible return values
-    %% {render,View,Data}
-    %% {render,View,Data,Options}
-    %% {text,Data}
-    %% {json,Data}
-    %% {redirect,Url}
-    %% {static,File}
-    %% {error,_} 
     case beepbeep:dispatch(Env) of
-	{render,View,Data} ->
-	    {ok,Content} = render_template(View,Data),
-	    Req:respond({200,
-			 [{"Content-Type","text/html"}|[get_cookie(Env)]],
-			 Content});
-	{render,View,Data,Options} ->
-	    {Status,ContentType,Headers} = extract_options(Options),
-	    {ok,Content} = render_template(View,Data),
-	    Req:respond({Status,
-			 [{"Content-Type",ContentType}|[get_cookie(Env)|Headers]],
-			 Content});
-	{text,Content} ->
-	    Req:respond({200,
-			 [{"Content-Type","text/plain"}|[get_cookie(Env)]],
-			 Content});
+	{ok,Status,ContentType,H,Content} ->
+	    Cookie = get_cookie(Env), 
+	    Headers = [Cookie|H],
+	    Req:respond({Status,[{"Content-Type",ContentType}|Headers],Content});
+	    %%Req:ok({"text/html",Headers,Content});
 	{redirect,Url} ->
 	    Req:respond({302, 
                          [{"Location", Url}, 
@@ -59,15 +36,7 @@ loop(Req) ->
 	{error,_} ->
 	    Req:respond({500,[],"Server Error"})
     end.
-
-render_template(ViewFile,Data) -> 
-    FullPathToFile = filename:join([skel_deps:local_path(["views"]),ViewFile]),
-    beepbeep:render_template(FullPathToFile,ViewFile,Data).
-
-extract_options(Options) ->
-    {proplists:get_value(status,Options,200),
-     proplists:get_value(content_type,Options,"text/html"),
-     proplists:get_value(headers,Options,[])}.
+ 
 
 get_cookie(Env) ->
     mochiweb_cookies:cookie(?BEEPBEEP_SID,beepbeep_args:get_session_id(Env),[{path, "/"}]).
