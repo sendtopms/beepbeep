@@ -1,63 +1,63 @@
-%% @author Dave Bryson [http://weblog.miceda.org]
-%% @copyright Dave Bryson 2008-2009
-%%
-%% @doc On start up, this module builds a mapping of the legal Controller
-%% requests based on the actually files with names ending in '_controller'
-%% in the src directory. For example, if you created two controllers:
-%%
-%% 'feed_controller' and 'login_controller'
-%% 
-%% the mapping:
-%%
-%% feed -> feed_controller
-%%
-%% login -> login_controller
-%%
-%% is created.  This prevents creating an atom() for every incoming
-%% request which could lead to a potential DoS attack by filling the global
-%% atom() table.
-%%
+%%%-------------------------------------------------------------------
+%%% Author  : Dave Bryson <http://weblog.mitre.org>
+%%%
+%%% Description : Maps the path of the controller to the actual controller 
+%%% name as an atom. Prevents calling list_to_atom in the dispatcher which
+%%% could lead to a potential DOS attack.  Thanks to Ville for catching that 
+%%%
+%%%-------------------------------------------------------------------
 -module(beepbeep_router).
 -author('Dave Bryson <http://weblog.miceda.org>').
 
 -behaviour(gen_server).
 
 %% API
--export([start/1,get_controller/1,controller_map/0]).
+-export([start/1,get_controller/1,view_map/0,get_view/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
+-record(state,{view_path,controllers}).
+
 %% 
-%% @doc Start the app with the Basedir of the application.
-%% Basedir is determined in the  supervisor
+%% Start the app with the Basedir of the application
+%% Basedir is determined in the webapp supervisor
 %%
 start(BaseDir) ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE,BaseDir,[]).
+    gen_server:start_link({local, ?MODULE}, ?MODULE, BaseDir, []).
 
 %%
-%% @doc Given the name of the controller in the URL
-%% return the module name in the mapping
+%% Given the name of the controller called in the URL
+%% return the module name
 %%
 get_controller(Controller) ->
     gen_server:call(?MODULE,{get_controller,Controller}).
 
 %%
-%% @doc Simple helper to view the name-controller mapping
+%% Return the fullpath and name of the requested template
 %%
-controller_map() ->
+get_view(Name) ->
+    gen_server:call(?MODULE,{get_view,Name}).
+
+%%
+%% Simple helper to view the name-controller mapping
+%%
+view_map() ->
     gen_server:call(?MODULE,view).
 
-%% @hidden
 init(BaseDir) ->
-    {ok, load_controllers(BaseDir)}.
+    %% Get the base directory for views
+    ViewPath = filename:join([BaseDir,"views"]),
+    %% Load the controllers
+    Controllers = load_controllers(BaseDir),
+    State = #state{view_path=ViewPath,controllers=Controllers},
+    {ok, State}.
 
 %% ---------Callbacks------------------------------
-
-%% @hidden
 handle_call({get_controller,Controller},_From, State) ->
-    Reply = case lists:keysearch(Controller,1,State) of
+    ControllerList = State#state.controllers,
+    Reply = case lists:keysearch(Controller,1,ControllerList) of
 		{value,{_,C}} ->
 		    {ok,C};
 		false ->
@@ -65,21 +65,24 @@ handle_call({get_controller,Controller},_From, State) ->
 	    end,
     {reply, Reply, State};
 
-%% @hidden
+handle_call({get_view,Name},_From,State) ->
+    Base = State#state.view_path,
+    TemplatePath = filename:join([Base,Name]),
+    {reply,TemplatePath,State};
+
 handle_call(view,_From,State) ->
-    error_logger:info_msg("Controller Map:~n~p~n",[State]),
+    ControllerList = State#state.controllers,
+    io:format("~p~n",[ControllerList]),
     {reply,ok,State}.
 
-%% @hidden
 handle_cast(_Msg, State) ->
     {noreply, State}.
-%% @hidden
+
 handle_info(_Info, State) ->
     {noreply, State}.
-%% @hidden
+
 terminate(_Reason, _State) ->
     ok.
-%% @hidden
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
@@ -87,9 +90,12 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%--------------------------------------------------------------------
 list_controllers(BaseDir) ->
+    %%{file, Here} = code:is_loaded(?MODULE),
+    %%BaseDir = filename:dirname(filename:dirname(Here)),
     Path = filename:join([BaseDir,"src","*_controller.erl"]),
     filelib:wildcard(Path).
     
+
 load_controllers(BaseDir) ->
     lists:foldl(fun(File,Acc) ->
 			OrgName = filename:basename(File,".erl"),
