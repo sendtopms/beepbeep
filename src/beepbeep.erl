@@ -5,9 +5,50 @@
 -module(beepbeep).
 -author('Dave Bryson <http://weblog.miceda.org>').
 
--export([dispatch/1,get_view_file/1]).
+-export([loop/2,dispatch/2,get_view_file/1]).
+-include("beepbeep.hrl").
 
-dispatch(Env) ->
+loop(Req, AppWebModule) ->
+	%% Setup env...
+    InitialEnv = mochiweb_env:setup_environment(Req),
+    Env = setup_session(Req,InitialEnv),
+    %%error_logger:info_report(Env),
+
+    case dispatch(Env, AppWebModule) of
+	{ok,Status,ContentType,H,Content} ->
+	    Cookie = get_cookie(Env),
+	    Headers = [Cookie|H],
+	    Req:respond({Status,[{"Content-Type",ContentType}|Headers],Content});
+	    %%Req:ok({"text/html",Headers,Content});
+	{redirect,Url} ->
+	    Req:respond({302,
+                         [{"Location", Url},
+                          {"Content-Type", "text/html; charset=UTF-8"}],
+                         ""});
+	{static, File} ->
+	    "/" ++ StaticFile = File,
+	    Req:serve_file(StaticFile,bbb_deps:local_path(["www"]));
+	{error,_} ->
+	    Req:respond({500,[],"Server Error"})
+    end.
+
+
+get_cookie(Env) ->
+    mochiweb_cookies:cookie(?BEEPBEEP_SID,beepbeep_args:get_session_id(Env),[{path, "/"}]).
+
+setup_session(Req,Env) ->
+    SessionKey = beepbeep_session_server:new_session(Req:get_cookie_value(?BEEPBEEP_SID)),
+    beepbeep_args:set_session_id(SessionKey,Env).
+
+
+dispatch(Env, AppWebModule) ->
+	%% TODO:
+	%%    AppWebModule:before_call
+	%%    Controller:before_flter
+	%%    Controller:before_render
+	%%    AppWebModule:before_render
+	%%    AppWebModule:error
+
     PathComponents = beepbeep_args:path_components(Env),
     %% Map the request to our app
     {ControllerName,ActionName,Args}  = case PathComponents of
@@ -20,7 +61,14 @@ dispatch(Env) ->
 					end,
     case beepbeep_router:get_controller(ControllerName) of
 	{ok,Controller} ->
-	    process_request(Env,Controller,ActionName,Args);
+		case try_app_filter(AppWebModule) of
+			ok ->
+				process_request(AppWebModule,Env,Controller,ActionName,Args);
+			Response ->
+				NewResponse = try_render(Controller, Response),
+				FinalResponse = try_app_render(AppWebModule, NewResponse),
+				handle_response(FinalResponse)
+		end;
 	no_controller ->
 	    %% Try static
 	    F = beepbeep_args:path(Env),
@@ -43,7 +91,7 @@ get_view_file(ViewFile) ->
 %%    {file, Here} = code:is_loaded(?MODULE),
 %%    filename:dirname(filename:dirname(Here)).
 
-process_request(Env,ControllerName,ActionName,Args) ->
+process_request(AppWebModule,Env,ControllerName,ActionName,Args) ->
     Env1 = beepbeep_args:set_action(Env,ActionName),
     error_logger:info_report(Env1),
     Controller = ControllerName:new(Env1),
@@ -53,16 +101,39 @@ process_request(Env,ControllerName,ActionName,Args) ->
 		{'EXIT',_} ->
 		    {error,no_action};
 		Response ->
-		    handle_response(Response)
+			NewResponse = try_render(Controller, Response),
+			FinalResponse = try_app_render(AppWebModule, NewResponse),
+		    handle_response(FinalResponse)
 	    end;
 	Any ->
 	    Any
     end.
 
+try_app_filter(AppWebModule) ->
+    case catch(AppWebModule:before_filter()) of
+	{'EXIT', {undef,_}} ->
+	    ok;
+	Any ->
+	    Any
+    end.
 try_filter(ControllerName) ->
     case catch(ControllerName:before_filter()) of
 	{'EXIT', {undef,_}} ->
 	    ok;
+	Any ->
+	    Any
+    end.
+try_render(ControllerName, Response) ->
+    case catch(ControllerName:before_render(Response)) of
+	{'EXIT', {undef,_}} ->
+	    Response;
+	Any ->
+	    Any
+    end.
+try_app_render(AppWebModule, Response) ->
+    case catch(AppWebModule:before_render(Response)) of
+	{'EXIT', {undef,_}} ->
+	    Response;
 	Any ->
 	    Any
     end.
