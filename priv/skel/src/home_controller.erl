@@ -25,3 +25,18 @@ before_filter() ->
     end.
 
     
+%%
+%% This hook accepts any tuple that BeepBeep understands:
+%% {render, View, Data}
+%% {render, View, Data, Options}
+%% {text, Data}
+%% and so on. See beepbeep.erl
+%% It should also return a tuple that BeepBeep understands
+%%
+%% General hook:
+%% before_render(Response) ->
+%%	ok.
+%%
+%% Specific hook:
+%% before_render({render, View, Data, Options}) ->
+%%	ok.

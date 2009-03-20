@@ -92,7 +92,14 @@ process_request(AppWebModule,Env,ControllerName,ActionName,Args) ->
 	ok ->
 	    case catch(Controller:handle_request(ActionName,Args)) of
 		{'EXIT',_} ->
-		    {error,no_action};
+			case try_app_error(AppWebModule, {error, no_action}) of
+				{error, Reason} ->
+					{error, Reason};
+				Response ->
+					NewResponse = try_render(Controller, Response),
+					FinalResponse = try_app_render(AppWebModule, NewResponse),
+					handle_response(FinalResponse)
+			end;
 		Response ->
 			NewResponse = try_render(Controller, Response),
 			FinalResponse = try_app_render(AppWebModule, NewResponse),
@@ -102,6 +109,13 @@ process_request(AppWebModule,Env,ControllerName,ActionName,Args) ->
 	    Any
     end.
 
+try_app_error(AppWebModule,Error) ->
+    case catch(AppWebModule:error(Error)) of
+	{'EXIT', {undef,_}} ->
+	    Error;
+	Any ->
+	    Any
+    end.
 try_app_filter(AppWebModule) ->
     case catch(AppWebModule:before_filter()) of
 	{'EXIT', {undef,_}} ->
