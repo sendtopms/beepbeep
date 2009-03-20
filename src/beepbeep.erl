@@ -61,9 +61,18 @@ process_request(Env,ControllerName,ActionName,Args) ->
     case try_filter(Controller) of
 	ok ->
 	    case catch(Controller:handle_request(ActionName,Args)) of
-		{'EXIT',_} ->
+		{'EXIT',Err} ->
+            io:format("ERROR~n========~n~p~n========~n", [Err]),
 		    {error,no_action};
-		Response -> Response
+		{render, Template, Data} ->
+			case before_render(Controller, {Template, Data}) of
+				{NewTemplate, NewData} ->
+					{render, NewTemplate, NewData};
+				Response ->
+					Response
+			end;
+		Response ->
+			Response
 	    end;
 	Any ->
 	    Any
@@ -72,6 +81,12 @@ process_request(Env,ControllerName,ActionName,Args) ->
 try_filter(ControllerName) ->
     case catch(ControllerName:before_filter()) of
 	{'EXIT', {undef,_}} -> ok;
+	Any -> Any
+    end.
+
+before_render(ControllerName, {Template, Data} = View) ->
+    case catch(ControllerName:before_render({Template, Data})) of
+	{'EXIT', {undef,_}} -> View;
 	Any -> Any
     end.
 

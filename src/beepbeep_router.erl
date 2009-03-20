@@ -23,7 +23,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start/1,get_controller/1,controller_map/0]).
+-export([start/1,get_controller/1,controller_map/0,update_controller_map/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -44,6 +44,12 @@ get_controller(Controller) ->
     gen_server:call(?MODULE,{get_controller,Controller}).
 
 %%
+%% @doc Update controller list
+%%
+update_controller_map() ->
+    gen_server:call(?MODULE,update_controller_map).
+
+%%
 %% @doc Simple helper to view the name-controller mapping
 %%
 controller_map() ->
@@ -56,8 +62,8 @@ init(BaseDir) ->
 %% ---------Callbacks------------------------------
 
 %% @hidden
-handle_call({get_controller,Controller},_From, State) ->
-    Reply = case lists:keysearch(Controller,1,State) of
+handle_call({get_controller,Controller},_From, {_BaseDir, Controllers} = State) ->
+    Reply = case lists:keysearch(Controller,1,Controllers) of
 		{value,{_,C}} ->
 		    {ok,C};
 		false ->
@@ -66,9 +72,12 @@ handle_call({get_controller,Controller},_From, State) ->
     {reply, Reply, State};
 
 %% @hidden
-handle_call(view,_From,State) ->
-    error_logger:info_msg("Controller Map:~n~p~n",[State]),
-    {reply,ok,State}.
+handle_call(view,_From,{_BaseDir, Controllers} = State) ->
+    error_logger:info_msg("Controller Map:~n~p~n",[Controllers]),
+    {reply,ok,State};
+
+handle_call(update_controller_map,_From,{BaseDir, _Controllers} = _State) ->
+    {reply,ok,load_controllers(BaseDir)}.
 
 %% @hidden
 handle_cast(_Msg, State) ->
@@ -91,13 +100,13 @@ list_controllers(BaseDir) ->
     filelib:wildcard(Path).
     
 load_controllers(BaseDir) ->
-    lists:foldl(fun(File,Acc) ->
+    {BaseDir, lists:foldl(fun(File,Acc) ->
 			OrgName = filename:basename(File,".erl"),
 			{ok,KeyName,_} = regexp:gsub(OrgName,"_controller",""), 
 			AtomName = list_to_atom(OrgName),
 			[{KeyName,AtomName}|Acc]
 		end,
 		[],
-		list_controllers(BaseDir)).
+		list_controllers(BaseDir))}.
     
 				      
