@@ -42,13 +42,6 @@ setup_session(Req,Env) ->
 
 
 dispatch(Env, AppWebModule) ->
-	%% TODO:
-	%%    AppWebModule:before_call
-	%%    Controller:before_flter
-	%%    Controller:before_render
-	%%    AppWebModule:before_render
-	%%    AppWebModule:error
-
     PathComponents = beepbeep_args:path_components(Env),
     %% Map the request to our app
     {ControllerName,ActionName,Args}  = case PathComponents of
