@@ -12,6 +12,7 @@ loop(Req, AppWebModule) ->
 	%% Setup env...
     InitialEnv = mochiweb_env:setup_environment(Req),
     Env = setup_session(Req,InitialEnv),
+
     %%error_logger:info_report(Env),
 
     case dispatch(Env, AppWebModule) of
@@ -27,7 +28,10 @@ loop(Req, AppWebModule) ->
                          ""});
 	{static, File} ->
 	    "/" ++ StaticFile = File,
-	    Req:serve_file(StaticFile,bbb_deps:local_path(["www"]));
+		Tokens = string:tokens(atom_to_list(AppWebModule), "_"),
+		AppNameTokens = lists:flatten(lists:sublist(Tokens, length(Tokens) - 1)),
+		Deps = list_to_atom(lists:flatten(AppNameTokens ++ "_deps")),
+	    Req:serve_file(StaticFile,Deps:local_path(["www"]));
 	{error,_} ->
 	    Req:respond({500,[],"Server Error"})
     end.
