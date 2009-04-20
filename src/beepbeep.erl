@@ -45,6 +45,10 @@ setup_session(Req,Env) ->
     beepbeep_args:set_session_id(SessionKey,Env).
 
 
+%% @private
+%% Performs actual magic of rerouting/rendering etc.
+%% see http://files.dmitriid.com/beepbeep/beepbeep.png for actual flow
+
 dispatch(Env, AppWebModule) ->
     PathComponents = beepbeep_args:path_components(Env),
     %% Map the request to our app
@@ -58,18 +62,16 @@ dispatch(Env, AppWebModule) ->
 					end,
     case beepbeep_router:get_controller(ControllerName) of
 	{ok,Controller} ->
-		case try_app_filter(AppWebModule) of
+		case try_app_filter(AppWebModule, Env) of
 			ok ->
 				process_request(AppWebModule,Env,Controller,ActionName,Args);
 			Response ->
-				NewResponse = try_render(Controller, Response),
-				FinalResponse = try_app_render(AppWebModule, NewResponse),
-				handle_response(FinalResponse)
+				preprocess_request(Response, AppWebModule,Env,Controller,ActionName,Args)
 		end;
 	no_controller ->
 	    %% Try static
 	    F = beepbeep_args:path(Env),
-	    {static,  F}
+		preprocess_request({static,  F}, AppWebModule,Env,undefined,ActionName,Args)
     end.
 
 
@@ -96,32 +98,67 @@ process_request(AppWebModule,Env,ControllerName,ActionName,Args) ->
 	ok ->
 	    case catch(Controller:handle_request(ActionName,Args)) of
 		{'EXIT',_} ->
-			case try_app_error(AppWebModule, {error, no_action}) of
+			case try_app_error(AppWebModule, {error, no_action}, Env) of
 				{error, Reason} ->
 					{error, Reason};
 				Response ->
-					NewResponse = try_render(Controller, Response),
-					FinalResponse = try_app_render(AppWebModule, NewResponse),
-					handle_response(FinalResponse)
+					preprocess_request(Response, AppWebModule,Env,Controller,ActionName,Args)
 			end;
 		Response ->
-			NewResponse = try_render(Controller, Response),
-			FinalResponse = try_app_render(AppWebModule, NewResponse),
-		    handle_response(FinalResponse)
+			preprocess_request(Response, AppWebModule,Env,Controller,ActionName,Args)
 	    end;
 	Any ->
-	    Any
+	    preprocess_request(Any, AppWebModule,Env,Controller,ActionName,Args)
     end.
 
-try_app_error(AppWebModule,Error) ->
-    case catch(AppWebModule:error(Error)) of
+%% handle renderers
+preprocess_request({render, View, Data} = _Request, AppWebModule,Env,Controller,ActionName,Args) ->
+	preprocess_request({render, View, Data, []}, AppWebModule,Env,Controller,ActionName,Args);
+preprocess_request({render, _View, _Data, _Options} = Request, AppWebModule,Env,Controller,ActionName,_Args) ->
+    Env1 = beepbeep_args:set_action(Env,ActionName),
+	NewRequest = pre_render(Request, AppWebModule, Env1, Controller),
+	handle_response(NewRequest);
+preprocess_request({text, _Data} = Request, AppWebModule,Env,Controller,ActionName,_Args) ->
+    Env1 = beepbeep_args:set_action(Env,ActionName),
+	NewRequest = pre_render(Request, AppWebModule, Env1, Controller),
+	handle_response(NewRequest);
+preprocess_request({static, _File} = Request, AppWebModule,Env,Controller,ActionName,_Args) ->
+    Env1 = beepbeep_args:set_action(Env,ActionName),
+	NewRequest = pre_render(Request, AppWebModule, Env1, Controller),
+	handle_response(NewRequest);
+
+%% handle internal redirects
+preprocess_request({controller, ControllerName} = _Request, AppWebModule,Env,Controller,ActionName,Args) ->
+	preprocess_request({controller, ControllerName, "index", []}, AppWebModule,Env,Controller,ActionName,Args);
+preprocess_request({controller, ControllerName, MethodName} = _Request, AppWebModule,Env,Controller,ActionName,Args) ->
+	preprocess_request({controller, ControllerName, MethodName, []}, AppWebModule,Env,Controller,ActionName,Args);
+preprocess_request({controller, ControllerName, MethodName, NewArgs} = _Request, AppWebModule,Env,_Controller,_ActionName,_Args) ->
+    case beepbeep_router:get_controller(ControllerName) of
+	{ok,Controller} ->
+		process_request(AppWebModule,Env,Controller,MethodName,NewArgs);
+	no_controller ->
+	    %% Try static
+	    F = beepbeep_args:path(Env),
+		preprocess_request({static,  F}, AppWebModule,Env,undefined,MethodName,NewArgs)
+    end;
+
+%% process all other requests as is
+preprocess_request(Request, _AppWebModule,_Env,_Controller,_ActionName,_Args) ->
+	handle_response(Request).
+
+pre_render(Request, AppWebModule,Env,Controller) ->
+	NewRequest = try_render(Controller, Request),
+	try_app_render(AppWebModule, NewRequest, Env).
+
+try_app_error(AppWebModule,Error, Env) ->
+    case catch(AppWebModule:error(Error, Env)) of
 	{'EXIT', {undef,_}} ->
 	    Error;
 	Any ->
 	    Any
     end.
-try_app_filter(AppWebModule) ->
-    case catch(AppWebModule:before_filter()) of
+try_app_filter(AppWebModule, Env) ->
+    case catch(AppWebModule:before_filter(Env)) of
 	{'EXIT', {undef,_}} ->
 	    ok;
 	Any ->
@@ -141,8 +178,8 @@ try_render(ControllerName, Response) ->
 	Any ->
 	    Any
     end.
-try_app_render(AppWebModule, Response) ->
-    case catch(AppWebModule:before_render(Response)) of
+try_app_render(AppWebModule, Response, Env) ->
+    case catch(AppWebModule:before_render(Response, Env)) of
 	{'EXIT', {undef,_}} ->
 	    Response;
 	Any ->
@@ -171,7 +208,7 @@ handle_response({redirect,Url}) ->
 
 handle_response({static,File}) ->
     {static,File}.
-    
+
 render_template(ViewFile,Data) ->
     FullPathToFile = get_view_file(ViewFile),
     error_logger:info_msg("Trying file: ~s~n",[FullPathToFile]),
@@ -181,6 +218,6 @@ render_template(ViewFile,Data) ->
     ModName = list_to_atom(Name1 ++ "_view"),
 
     erlydtl:compile(FullPathToFile,ModName),
-    ModName:render(Data).    
-	    
-	    
+    ModName:render(Data).
+
+

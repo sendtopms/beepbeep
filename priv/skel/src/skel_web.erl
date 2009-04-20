@@ -15,34 +15,54 @@ stop() ->
 loop(Req) ->
 	beepbeep:loop(Req, ?MODULE).
 
-%% If necessary, add these filters:
+%% If necessary, add these hooks:
 %% *DON'T FORGET TO EXPORT THEM AS NECESSARY*
-%%
-%%
-%% before_filter() ->
-%%	ok. %% or any tuple that beepbeep understands, similar to controllers'
-%%      %% before_filter/1
-%%
-%%
 
+%% before_filter/1
 %%
-%% This hook accepts any tuple that BeepBeep understands:
+%% Should return one of:
+%% ok
 %% {render, View, Data}
 %% {render, View, Data, Options}
+%% {static, File}
 %% {text, Data}
-%% and so on. See beepbeep.erl
+%% {redirect, Url}
+%% {controller, ControllerName}
+%% {controller, ControllerName, ActionName}
+%% {controller, ControllerName, ActionName, Args}
 %%
-%% General hook:
-%% before_render(Response) ->
-%%	ok. 
-%%
-%% Specific hook:
-%% before_render({render, View, Data, Options}) ->
+%% before_filter(Env) ->
 %%	ok.
 
+%% before_render/2
+%%
+%% This hook accepts one of these tuples:
+%% {render, View, Data}
+%% {render, View, Data, Options}
+%% {static, File}
+%% {text, Data}
+%%
+%% Should return one of:
+%% {render, View, Data}
+%% {render, View, Data, Options}
+%% {static, File}
+%% {text, Data}
+%% {redirect, Url}
+%%
+%% before_render({render, View, Data, Options}, _Env) ->
+%%	{render, View, Data, Options}.
 
+%% error/2
 %%
 %% Catch some errors:
 %%
-%% error({error, _Reason} = Error) ->
+%% Should return one of:
+%% {error, Reason}
+%% {render, View, Data}
+%% {render, View, Data, Options}
+%% {static, File}
+%% {text, Data}
+%% {redirect, Url}
+%%
+%% error({error, _Reason} = Error, _Env) ->
 %%	Error.
