@@ -1,0 +1,48 @@
+{% extends "../base.html" %}
+{% block content %}
+		<div id="content">
+			<div class="container_12">
+				<div class="grid_8">
+ 					<h1>{{ stable_versions }}</h1>
+					<p>
+						{{ current_version }} {{ beepbeep_version }}
+					</p>
+					<p>
+						{{ get_it_here }}
+						<ul>
+							<li><a href="http://files.dmitriid.com/beepbeep/beepbeep-0.1.zip">beepbeep-0.1.zip</a></li>
+							<li><a href="http://files.dmitriid.com/beepbeep/beepbeep-0.1.tar.gz">beepbeep-0.1.tar.gz</a></li>
+						</ul>
+					</p>
+ 					<h1>{{ development_version }}</h1>
+					<p>
+						{{ get_development_version }}
+						<ul>
+							<li><a href="http://github.com/davebryson/beepbeep/tree/master">{{ fork_dave_byrson }}</a></li>
+							<li><a href="http://github.com/dmitriid/beepbeep/tree/master">{{ fork_dmitrii_dimandt }}</a></li>
+						</ul>
+					</p>
+				</div>
+				<div id="toc" class="grid_3">
+					<p>
+						{{ get_development_snapshot }}
+					</p>
+					<p>
+						<code>
+							git clone git@github.com:davebyrson/beepbeep.git
+						</code>
+					</p>
+					<p>
+						<code>
+							git clone git@github.com:dmitriid/beepbeep.git
+						</code>
+					</p>
+					<p>
+						{{ then_get_started }}
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class="clear">&nbsp;</div>
+
+{% endblock %}

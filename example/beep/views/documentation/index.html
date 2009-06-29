@@ -1,0 +1,28 @@
+{% extends "../base.html" %}
+{% block content %}
+		<div id="content">
+			<div class="container_12">
+				<div class="grid_8">
+ 					<h1>{{ overview }}</h1>
+					<p>
+						{{ overview_description | linebreaksbr }}
+					</p>
+ 					<h1>{{ features }}</h1>
+					<p>
+						<ul>
+							<li>{{ feature_script }}</li>
+							<li>{{ feature_session }}</li>
+							<li>{{ feature_filters }}</li>
+							<li>{{ feature_dtl }}</li>
+						</ul>
+					</p>
+				</div>
+				<div id="toc" class="grid_3">
+					{% include "toc.html" %}
+				</div>
+			</div>
+		</div>
+		<div class="clear">&nbsp;</div>
+
+		
+{% endblock %}

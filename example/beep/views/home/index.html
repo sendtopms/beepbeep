@@ -1,0 +1,52 @@
+{% extends "../base.html" %}
+{% block content %}
+		<div id="introarea">
+			<div class="container_12">
+				<div id="intro" class="grid_7">
+					<h1>{{ framework_slogan | linebreaksbr }}</h1>
+				</div>
+				<div id="buzzwords" class="grid_5">
+					<h1>{{ buzzwords_to_get_started }}</h1>
+					<ul>
+						<li class="float">{{ fast }}</li>
+						<li class="float">Erlang</li>
+						<li class="float">Mochiweb</li>
+						<li class="float">MVC</li>
+						<li>{{ dtl }}</li>
+					</ul>
+				</div>
+				<div class="clear">&nbsp;</div>
+			</div>
+		</div>
+		<div class="container_12" id="get-it">
+			<div class="grid_12">
+				<h1>{{ header_get_it }}</h1> <h1>{{ link_on_github }}</h1> <h1><a href="http://files.dmitriid.com/beepbeep/beepbeep-0.1.zip">v 0.1</a></h1>
+			</div>
+			<div class="clear">&nbsp;</div>
+		</div>
+		<div id="whatis">
+			<div class="container_12">
+				<div class="grid_4">
+ 					<h1>{{ q_a_microframework }}</h1>
+					<p>
+						{{ description_microframework | linebreaksbr }}
+					</p>
+				</div>
+				<div class="grid_4">
+ 					<h1>{{ q_how_it_works }}</h1>
+					<p>
+						{{ description_how_it_works | linebreaksbr }}
+					</p>
+				</div>
+				<div class="grid_4">
+ 					<h1>{{ q_anyone_using }}</h1>
+					<p>
+						{{ description_anyone_using | linebreaksbr }}
+					</p>
+				</div>
+				<div class="clear">&nbsp;</div>
+			</div>
+		</div>
+		<div class="clear">&nbsp;</div>
+
+{% endblock %}

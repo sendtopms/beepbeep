@@ -1,0 +1,193 @@
+{% extends "../base.html" %}
+{% block content %}
+		<div id="content">
+			<div class="container_12">
+				<div class="grid_8">
+ 					<h1>{{ hooks }}</h1>
+					<h2>{{ hooks_overview_title }}</h2>
+					<p>
+						{{ hooks_overview }}
+					</p>
+					<p>
+						<img src="/img/beepbeep/filters.png" alt="{{ hooks }}" />
+					</p>
+					<p>
+						{{ hooks_overview_2 }}
+					</p>
+					<p>
+						<ul>
+							<li><code>app_web:preprocess/1</code></li>
+							<li><code>app_web:before_filter/1</code></li>
+							<li><code>Controller:before_filter/0</code></li>
+							<li><code>Controller:before_render/1</code></li>
+							<li><code>app_web:before_render/2</code></li>
+						</ul>
+						{{ where_app_web }}
+					</p>
+					<h2>{{ hooks_detailed }}</h2>
+
+					<h3>{{ render_state }}</h3>
+					<p>
+						<p>{{ render_state_description }}</p>
+						<ul>
+							<li><code>{render, View, Data}</code></li>
+							<li><code>{render, View, Data, Options}</code></li>
+							<li><code>{static, File}</code></li>
+							<li><code>{text, Data}</code></li>
+						</ul>
+					</p>
+
+					<h3>{{ new_controller }}</h3>
+					<p>
+						<p>{{ new_controller_description }}</p>
+						<ul>
+							<li><code>{controller, ControllerName}</code></li>
+							<li><code>{controller, ControllerName, Methodame}</code></li>
+							<li><code>{controller, ControllerName, Methodame, Arguments}</code></li>
+						</ul>
+					</p>
+
+					<h3>app_web:preprocess/1</h3>
+					<p>
+						<strong>{{ params }}</strong>: <code>Env</code> — {{ environment_variable }}
+						<br />
+						<strong>{{ returns }}</strong>: <code>NewEnv | {redirect, Path}</code>
+					</p>
+					<p>{{ hook_app_web_preprocess | linebreaksbr }}</p>
+					<pre><code lang="erlang">
+preprocess(Env) ->
+	%% do some custom routing
+	%% detect language we need to process
+
+	PathInfo = beepbeep_args:path_components(Env),
+	Path = list_to_binary(PathInfo),
+
+	Session = beepbeep_args:get_session_data(Env),
+
+
+	Language = case proplists:get_value("language", Session) of
+		undefined ->
+			"en-US";
+		Any ->
+			Any
+	end,
+
+	beepbeep_args:set_session_data(Env, "language", Language),
+
+	case Path of
+		&lt;&lt;&gt;&gt; ->
+			{redirect , "/"++Language++"/"};
+		&lt;&lt;A,B,$-,C,D&gt;&gt; ->
+			%% we have a language set it
+			beepbeep_args:set_session_data(Env, "language", [A,B,$-,C,D]),
+			beepbeep_args:set_value("PATH_INFO", "/", Env);
+		&lt;&lt;A,B,$-,C,D,Rest/binary&gt;&gt; ->
+			beepbeep_args:set_session_data(Env, "language", [A,B,$-,C,D]),
+			beepbeep_args:set_value("PATH_INFO", "/" ++ string:join(tl(PathInfo), "/"), Env);
+		_ ->
+			{redirect , "/"++Language++"/" ++ string:join(PathInfo, "/")}
+	end.
+					</code></pre>
+
+					<h3>app_web:before_filter/1</h3>
+					<p>
+						<strong>{{ params }}</strong>: <code>Env</code> — {{ environment_variable }}
+						<br />
+						<strong>{{ returns }}</strong>: <code> ok | NewController | {redirect, Path}</code>
+					</p>
+					<p>{{ hook_app_web_before_filter | linebreaksbr }}</p>
+					<pre><code lang="erlang">
+before_filter(Env) ->
+	case myuserlib:is_user_logged_in(Env) of
+		false ->
+			case proplists:get_value("action", Env) of
+				"login" ->
+					ok;
+				_ ->
+					{redirect, "/user/login"}
+			end;
+		true ->
+			ok
+	end.
+					</code></pre>
+
+					<h3>Controller:before_filter/0</h3>
+					<p>
+						<strong>{{ params }}</strong>: —
+						<br />
+						<strong>{{ returns }}</strong>: <code> ok | NewController | {redirect, Path}</code>
+					</p>
+					<p>{{ hook_controller_before_filter | linebreaksbr }}</p>
+					<pre><code lang="erlang">
+before_filter() ->
+	FilterOnly = ["item"],
+	Action = beepbeep_args:get_action(Env),
+	case lists:member(Action, FilterOnly) of
+		true ->
+			case beepbeep_args:path_components(Env) of
+				[_Controller, _Action, ID] ->
+					NewsTitle = my_news_lib:get_news_title(ID),
+					{redirect, "/news/show" ++ NewsTitle};
+				_ ->
+					{redirect, "/news/"}
+			end;
+		false ->
+			ok
+    end.
+					</code></pre>
+
+
+					<h3>Controller:before_render/1</h3>
+					<p>
+						<strong>{{ params }}</strong>: <code>{render, View, Data, Options}</code>
+						<br />
+						<strong>{{ returns }}</strong>: <code> RenderState</code>
+					</p>
+					<p>{{ hook_controller_before_render | linebreaksbr }}</p>
+					<pre><code lang="erlang">
+before_render({render, View, Data, Options}) ->
+	{render, View, Data ++ [
+		 ?TXT("overview")
+		,?TXT("get_started")
+		,?TXT("working_with_beepbeep")
+		,?TXT("hooks")
+		,?TXT("technical_info")
+		,?TXT("how_stuff_works")
+		,?TXT("roadmap")
+		,?TXT("faq")
+						   ], Options}.
+					</code></pre>
+
+
+					<h3>app_web:before_render/2</h3>
+					<p>
+						<strong>{{ params }}</strong>: <code>{render, View, Data, Options}, Env</code>
+						<br />
+						<strong>{{ returns }}</strong>: <code> RenderState</code>
+					</p>
+					<p>{{ hook_app_web_before_render | linebreaksbr }}</p>
+					<pre><code lang="erlang">
+-define(LANGUAGES, ["en-US", "ru-RU", "tr-TR", "ro-RO"]).
+
+before_render({render, View, Data, Options}, Env) ->
+	Languages = lists:filter(fun(T) -> T =/= Language end, ?LANGUAGES),
+
+	{render, View, Data ++ [
+		,{languages, Languages}
+		,?TXT("menu_home")
+		,?TXT("menu_download")
+		,?TXT("menu_documentation")
+		,?TXT("menu_faq")
+	], Options}.
+
+					</code></pre>
+				</div>
+
+				<div id="toc" class="grid_3">
+					{% include "toc.html" %}
+				</div>
+			</div>
+		</div>
+		<div class="clear">&nbsp;</div>
+
+{% endblock %}

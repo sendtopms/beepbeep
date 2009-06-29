@@ -1,0 +1,91 @@
+{% extends "../base.html" %}
+{% block content %}
+		<div id="content">
+			<div class="container_12">
+				<div class="grid_8">
+ 					<h1>{{ get_started }}</h1>
+					<p>
+						<ol>
+							<li>{{ download_code }}</li>
+							<li>{{ cd_to_directory }}</li>
+							<li>{{ run_make }}</li>
+							<li>{{ generate_app }}
+							<pre><code lang="bash">./script/new_beep.erl {{ your_app_name }} "{{ destination_dir }}"</code></pre></li>
+						</ol>
+					</p>
+					<p>
+						{{ this_generates_app }}
+					</p>
+					<p>
+						{{ to_run_the_sample }}
+						<ol>
+							<li>{{ cd_to_app_dir }}</li>
+							<li>{{ compile_app }}</li>
+							<li>{{ start_server }} <code>./start-server.sh</code></li>
+							<li>{{ visit_sample_site }} <a href="http://localhost:8000">http://localhost:8000</a></li>
+						</ol>
+					</p>
+					<h2>{{ how_it_works }}:</h2>
+					<p>
+						{{ primer_write_controller }}
+						<pre><code lang="erlang">handle_request(Action,Params)</code></pre>
+						{{ where }}
+						<ol>
+							<li>{{ primer_what_is_action }}</li>
+							<li>{{ primer_what_is_params }}</li>
+						</ol>
+					</p>
+					<p>
+						{{ primer_mapping }}
+					</p>
+					<p>
+						{{ primer_example }}
+<pre><code lang="erlang">%% hello_controller.erl
+-module(hello_controller).
+
+-export([handle_request/2, before_filter/0]).
+
+%% {{ maps_to }} http://localhost:8000/hello/show
+handle_request("show",[]) ->
+	&#123;render, "hello/show.html",[&#123;name,"BeepBeep"}]};
+
+%% {{ maps_to }} http://localhost:8000/hello/feed/2007
+handle_request("feed",[Year]) ->
+	%% Now Year contains the value 2007
+	&#123;render,"hello/feed.html",[&#123;year,Year}]}.
+
+%% {{ callback_filter_hook }}
+before_filter(Params) ->
+	ok.</code></pre>
+					</p>
+					<p>
+						{{ primer_return_view }}
+					</p>
+					<p>
+						{{ primer_use_view }}
+					</p>
+					<p>
+						{{ primer_view_example }}
+<pre><code lang="dtl">&lt;h2>Hello from &#123;&#123; name }} &lt;/h2></code></pre>
+						{{ primer_view_example_result }}
+<pre><code lang="dtl">&lt;h2>Hello from BeepBeep&lt;/h2></code></pre>
+					</p>
+					<p>
+						{{ primer_view_explanation }}
+					</p>
+					<p>
+						{{ primer_separation }}
+					</p>
+					<p>
+						{{ primer_hooks }}
+					</p>
+				</div>
+				<div id="toc" class="grid_3">
+					{% include "toc.html" %}
+
+				</div>
+			</div>
+		</div>
+		<div class="clear">&nbsp;</div>
+
+{% endblock %}

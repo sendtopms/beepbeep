@@ -13,7 +13,7 @@
 
 -behaviour(gen_server).
 
--export([start/0,new_session/1,get_session_data/1,set_session_data/3,delete_session/1]).
+-export([start/0,new_session/1,get_session_data/1,set_session_data/3,delete_session/1,remove_session_data/2]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
@@ -43,6 +43,8 @@ set_session_data(Sid,Key,Value) ->
 delete_session(Sid) ->
     gen_server:call(?MODULE,{delete_session,Sid}).
 
+remove_session_data(Sid,Key) ->
+    gen_server:call(?MODULE,{remove_session_data,Sid,Key}).
 
 %%% Callbacks
 handle_call({new_session,Cookie}, _From, _State) ->
@@ -87,8 +89,24 @@ handle_call({set_session_data,Sid,Key,Value},_From,_State) ->
 
 handle_call({delete_session,Sid},_From,_State) ->
     ets:delete(?MODULE,Sid),
-    {reply,ok,undefined}.
+    {reply,ok,undefined};
 
+handle_call({remove_session_data,Sid,Key},_From,_State) ->
+    Data = case ets:lookup(?MODULE,Sid) of
+               [S] ->
+                   S#beep_session.data;
+               [] -> []
+           end,
+    Data1 = case proplists:is_defined(Key,Data) of
+                true ->
+                    proplists:delete(Key,Data);
+                false ->
+                    Data
+            end,
+
+    ets:insert(?MODULE,#beep_session{sid=Sid,data=Data1,ttl=0}),
+
+    {reply,ok,undefined}.
 
 handle_cast(_Msg, State) ->
     {noreply, State}.

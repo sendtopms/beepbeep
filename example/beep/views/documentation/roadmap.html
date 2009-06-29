@@ -1,0 +1,27 @@
+{% extends "../base.html" %}
+{% block content %}
+		<div id="content">
+			<div class="container_12">
+				<div class="grid_8">
+ 					<h1>{{ roadmap }}</h1>
+					<p>
+						{{ this_is_a_tentative_roadmap }}
+						<ul>
+							<li>{{ better_error_handling_customization }}</li>
+							<li>{{ options_to_beepbeep }}</li>
+							<li>{{ erlydtl_changes }} <a href="http://code.google.com/p/erlydtl/issues/detail?id=12">Issue 12</a>, <a href="http://code.google.com/p/erlydtl/issues/detail?id=14">Issue 14</a></li>
+							<li>{{ webmachine_integration }}</li>
+							<li>{{ yaws_integration }}</li>
+							<li>{{ pluggable_template_engines }}</li>
+						</ul>
+					</p>
+				</div>
+				<div id="toc" class="grid_3">
+					{% include "toc.html" %}
+
+				</div>
+			</div>
+		</div>
+		<div class="clear">&nbsp;</div>
+
+{% endblock %}

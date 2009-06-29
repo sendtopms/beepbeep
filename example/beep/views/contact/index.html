@@ -1,0 +1,34 @@
+{% extends "../base.html" %}
+{% block content %}
+		<div id="content">
+			<div class="container_12">
+				<div class="grid_8">
+ 					<h1>{{ contact }}</h1>
+					<p>
+						<form action="/{{ language }}/contact/send" method="post">
+							<label for="name">{{ name }}</label>
+							<input type="text" name="name" id="name" />
+							<br />
+							<label for="email">{{ email }}</label>
+							<input type="text" name="email" id="email" />
+							<br />
+							<label for="site">{{ site }}</label>
+							<input type="text" name="site" id="site" />
+							<br />
+							<label for="text">{{ text }}</label>
+							<textarea name="text" id="text" rows="20" cols="60"></textarea>
+							<br />
+							<label for="submit">&nbsp;</label>
+							<input type="submit" name="submit" value="{{ submit }}"  />
+						</form>
+					</p>
+				</div>
+				<div id="toc" class="grid_3">
+					<a href="http://github.com/davebryson/">http://github.com/davebryson/</a><br />
+					<a href="http://github.com/dmitriid/">http://github.com/dmitriid/</a>
+				</div>
+			</div>
+		</div>
+		<div class="clear">&nbsp;</div>
+
+{% endblock %}

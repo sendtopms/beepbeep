@@ -1,3 +1,5 @@
+h2. Also see "BeepBeep demo/documentation site":http://beepbeep.dmitriid.com/
+
 h2. BeepBeep a simple web application for Erlang
 
 BeepBeep is a simple Web Application framework for Erlang inspired by Rails and Merb. It follows the 

@@ -29,11 +29,12 @@ loop(Req, AppWebModule) ->
 	{static, File} ->
 	    "/" ++ StaticFile = File,
 		Tokens = string:tokens(atom_to_list(AppWebModule), "_"),
-		AppNameTokens = lists:flatten(lists:sublist(Tokens, length(Tokens) - 1)),
-		Deps = list_to_atom(lists:flatten(AppNameTokens ++ "_deps")),
+		AppNameTokens = lists:sublist(Tokens, length(Tokens) - 1),
+		Deps = list_to_atom(lists:flatten( string:join(AppNameTokens, "_") ++ "_deps")),
 	    Req:serve_file(StaticFile,Deps:local_path(["www"]));
-	{error,_} ->
-	    Req:respond({500,[],"Server Error"})
+	{error, Err} ->
+		{ok, Data} = beepbeep_error:render_error(Err),
+	    Req:respond({500,[],"Server Error: " ++ Data})
     end.
 
 
@@ -49,7 +50,17 @@ setup_session(Req,Env) ->
 %% Performs actual magic of rerouting/rendering etc.
 %% see http://files.dmitriid.com/beepbeep/beepbeep.png for actual flow
 
-dispatch(Env, AppWebModule) ->
+dispatch(OriginalEnv, AppWebModule) ->
+	Env = app_process_environment(AppWebModule,OriginalEnv),
+
+	case Env of
+		{redirect, Url} ->
+			handle_response({redirect,Url});
+		_ ->
+			dispatch1(Env, AppWebModule)
+	end.
+
+dispatch1(Env, AppWebModule) ->
     PathComponents = beepbeep_args:path_components(Env),
     %% Map the request to our app
     {ControllerName,ActionName,Args}  = case PathComponents of
@@ -97,8 +108,8 @@ process_request(AppWebModule,Env,ControllerName,ActionName,Args) ->
     case try_filter(Controller) of
 	ok ->
 	    case catch(Controller:handle_request(ActionName,Args)) of
-		{'EXIT',_} ->
-			case try_app_error(AppWebModule, {error, no_action}, Env) of
+		{'EXIT', ErrorReason} ->
+			case try_app_error(AppWebModule, {error, ErrorReason}, Env) of
 				{error, Reason} ->
 					{error, Reason};
 				Response ->
@@ -112,11 +123,18 @@ process_request(AppWebModule,Env,ControllerName,ActionName,Args) ->
     end.
 
 %% handle renderers
+preprocess_request({render, View} = _Request, AppWebModule,Env,Controller,ActionName,Args) ->
+	preprocess_request({render, View, [], []}, AppWebModule,Env,Controller,ActionName,Args);
 preprocess_request({render, View, Data} = _Request, AppWebModule,Env,Controller,ActionName,Args) ->
 	preprocess_request({render, View, Data, []}, AppWebModule,Env,Controller,ActionName,Args);
 preprocess_request({render, _View, _Data, _Options} = Request, AppWebModule,Env,Controller,ActionName,_Args) ->
     Env1 = beepbeep_args:set_action(Env,ActionName),
-	NewRequest = pre_render(Request, AppWebModule, Env1, Controller),
+	Req = case beepbeep_args:get_flash(Env1) of
+        none -> Request;
+        Flash ->
+            {render, _View, [{flash, Flash}|_Data], _Options}
+    end,
+	NewRequest = pre_render(Req, AppWebModule, Env1, Controller),
 	handle_response(NewRequest);
 preprocess_request({text, _Data} = Request, AppWebModule,Env,Controller,ActionName,_Args) ->
     Env1 = beepbeep_args:set_action(Env,ActionName),
@@ -150,43 +168,56 @@ pre_render(Request, AppWebModule,Env,Controller) ->
 	NewRequest = try_render(Controller, Request),
 	try_app_render(AppWebModule, NewRequest, Env).
 
+
+app_process_environment(AppWebModule, Env) ->
+    case catch(AppWebModule:preprocess(Env)) of
+	{'EXIT', _} ->
+	    Env;
+	Any ->
+	    Any
+    end.
+
+
 try_app_error(AppWebModule,Error, Env) ->
     case catch(AppWebModule:error(Error, Env)) of
-	{'EXIT', {undef,_}} ->
+	{'EXIT', _} ->
 	    Error;
 	Any ->
 	    Any
     end.
 try_app_filter(AppWebModule, Env) ->
     case catch(AppWebModule:before_filter(Env)) of
-	{'EXIT', {undef,_}} ->
+	{'EXIT', _} ->
 	    ok;
 	Any ->
 	    Any
     end.
 try_filter(ControllerName) ->
     case catch(ControllerName:before_filter()) of
-	{'EXIT', {undef,_}} ->
+	{'EXIT', _} ->
 	    ok;
 	Any ->
 	    Any
     end.
 try_render(ControllerName, Response) ->
     case catch(ControllerName:before_render(Response)) of
-	{'EXIT', {undef,_}} ->
+	{'EXIT', _} ->
 	    Response;
 	Any ->
 	    Any
     end.
 try_app_render(AppWebModule, Response, Env) ->
     case catch(AppWebModule:before_render(Response, Env)) of
-	{'EXIT', {undef,_}} ->
+	{'EXIT', _} ->
 	    Response;
 	Any ->
 	    Any
     end.
 
 %% Handle all responses from controller
+handle_response({render,View}) ->
+	handle_response({render,View,[]});
+
 handle_response({render,View,Data}) ->
     {ok,Content} = render_template(View,Data),
     {ok,200,"text/html",[],Content};
@@ -217,7 +248,18 @@ render_template(ViewFile,Data) ->
     Name1 = filename:basename(Name,".html"),
     ModName = list_to_atom(Name1 ++ "_view"),
 
-    erlydtl:compile(FullPathToFile,ModName),
-    ModName:render(Data).
+    Compile = erlydtl:compile(FullPathToFile,ModName),
+	case Compile of
+		{error, Error1} ->
+			io:format("~p~n",[Error1]),
+			beepbeep_error:render_error({FullPathToFile,Error1});
+		_ ->
+		    case catch ModName:render(Data) of
+				{error, Error2} ->
+					beepbeep_error:render_error({FullPathToFile, Error2});
+			Any ->
+				Any
+		end
+	end.
 
 

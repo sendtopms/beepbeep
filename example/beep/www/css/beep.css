@@ -1,0 +1,161 @@
+* {
+	margin: 0;
+}
+
+html > body {
+	font-size: 1em;
+}
+
+html, body {
+	height: 100%;
+}
+
+body {
+	font-family: "Lucida Grande","Lucida Sans Unicode",Verdana,Arial,Helvetica,sans-serif;
+	font-size: 1em;
+	background-color: #fff; /*#61903b;*/
+	background: URL(/img/page-bg.gif) repeat-y;
+	background-position: 50% 50%;
+}
+
+h1 {
+	font-size: 1.4em;
+}
+
+h2 {
+	font-size: 1.3em;
+}
+
+h3 {
+	font-size: 1.2em;
+}
+
+h4, h5 {
+	font-size: 1.1em;
+}
+
+
+a, a:link {
+	color: #f17d2c;
+}
+
+
+pre {
+	background-color: #efefef;
+	overflow: auto;
+	padding: 10px;
+	margin: 10px;
+}
+
+#page-body li {
+	margin-top: 10px;
+}
+
+div, div p {
+	color: #646464;
+}
+
+div.wrap {
+	background-color: #f1f3f6;
+	width: 960px;
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto
+}
+
+div.wrap div {
+	text-align: left;
+	/*background-color: #f1f3f6;*/
+}
+
+#page_header {
+	height: 110px;
+	background-color: #e7edf2 !important;
+	border-bottom: 1px solid #dcdee1;
+}
+
+#logo {
+	text-align: center;
+	line-height: 108px;
+}
+
+#logo h1 {
+	float: left;
+	margin-left: 40px;
+}
+
+#logo a, #logo a:link{
+	text-decoration: none;
+	color: #f17d2c;
+	font-size: 2em;
+}
+
+#mainnav {
+	float: right;
+	margin-right: 40px;
+	line-height: 108px;
+	list-style-type: none;
+}
+
+#mainnav li {
+	float: left;
+}
+
+#mainnav li a:hover, li.current a, li.current a:link {
+	background: URL(/img/menu-current.gif) no-repeat;
+	background-position: bottom center;
+}
+
+#mainnav li a, #mainnav li a:link {
+	font-size: 1.3em;
+	text-decoration: none;
+	color: #f17d2c;
+	display: block;
+	height: 110px;
+}
+
+#lang {
+	position:relative;
+	top: 0;
+	right: 00px;
+}
+
+#intro {
+	height: 170px;
+	padding-top: 45px;
+}
+
+#intro h1 {
+	font-size: 1.7em;
+	padding-left: 10px;
+}
+
+#get-it {
+	height: 60px;
+	line-height: 60px;
+	background: URL(/img/get-arrow.gif) no-repeat;
+	background-color: #e7edf2;
+}
+
+#get-it h1 {
+	display: inline;
+	font-size: 1.4em;
+	padding-left: 60px;
+
+}
+
+#whatis {
+	margin-top: 40px;
+}
+
+#footer {
+	height: 110px;
+	background-color: #e7edf2 !important;
+	border-top: 1px solid #dcdee1;
+}
+
+#footer div{
+	padding-top: 20px;
+	font-size: .8em;
+	text-align: center;
+}

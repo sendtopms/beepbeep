@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+		<title>Welcome to BeepBeep</title>
+		<link href="/css/reset.css" rel="stylesheet" type="text/css"/>
+		<link href="/css/960.css" rel="stylesheet" type="text/css"/>
+		<link href="/css/text.css" rel="stylesheet" type="text/css"/>
+		<link href="/css/beep.css" rel="stylesheet" type="text/css"/>
+		{% if additional_css %}
+			<link href="/css/{{ additional_css }}" rel="stylesheet" type="text/css"/>
+		{% endif %}
+	</head>
+	<body>
+		<div class="wrap">
+			<!-- start header -->
+			<div id="header">
+				<div class="container_12" id="page_header">
+					<div class="div_3" id="logo">
+						<h1>
+							<a href="/" title="beepbeep">beepbeep</a>
+						</h1>
+					</div>
+					<div class="div_9">
+						<ul id="mainnav" >
+							<li{% if menu_link_home %} class="current"{% endif %}><span><a href="/{{ language }}/" title="{{ menu_home }}" >{{ menu_home }}</a></span></li>
+							<li{% if menu_link_download %} class="current"{% endif %}><span><a href="/{{ language }}/download/" title="{{ menu_download }}" >{{ menu_download }}</a></span></li>
+							<li{% if menu_link_documentation %} class="current"{% endif %}><span><a href="/{{ language }}/documentation/" title="{{ menu_documentation }}" >{{ menu_documentation }}</a></span></li>
+							<li{% if menu_link_faq %} class="current"{% endif %}><span><a href="/{{ language }}/faq/" title="{{ menu_faq }}" >{{ menu_faq }}</a></span></li>
+						</ul>
+<div id="lang">
+			{% for lang in languages %}
+			<a href="/{{ lang }}/{{ path }}" title="{{ lang }}"><img src="/img/lang/{{ lang }}.png" alt="{{ lang }}" /></a>
+			{% endfor %}
+		</div>					</div>
+					<div class="clear">&nbsp;</div>
+				</div>
+			</div>
+			<!-- end header -->
+			<div id="page-body">
+				{% block content %}{% endblock %}
+			</div>
+			<div class="container_12" id="footer">
+				<div class="div_12">
+					Beepbeep originally deveoped by <a href="http://weblog.miceda.org/">Dave Bryson</a><br />
+					Site designed and implemented by <a href="http://dmitriid.com/">Dmitrii Dimandt</a>
+				</div>
+			</div>
+		</div>
+		
+	</body>
+</html>

@@ -53,8 +53,10 @@ get_all_headers(Env) ->
                 end, [], Env).
 
 get_param(Key,Env) ->
+	get_param(Key,Env,"").
+get_param(Key,Env,Default) ->
     Params = proplists:get_value("beepbeep.data",Env),
-    proplists:get_value(Key,Params,"?").
+    proplists:get_value(Key,Params,Default).
 
 get_session_id(Env) ->
     proplists:get_value("beepbeep_sid",Env).
@@ -76,6 +78,9 @@ get_session_data(Env) ->
     Sid = get_session_id(Env),
     beepbeep_session_server:get_session_data(Sid).
 
+get_session_data(Key, Env) ->
+    proplists:get_value(Key,get_session_data(Env)).
+
 get_action(Env) ->
     proplists:get_value("action_name",Env).
 
@@ -85,6 +90,27 @@ set_action(Env,Value) ->
 	    set_value("action_name",Value,Env);
 	false ->
 	    [proplists:property({"action_name", Value})|Env]
+    end.
+
+get_controller(Env) ->
+    PathComponents = path_components(Env),
+    %% Map the request to our app
+    {ControllerName, _ActionName, _Args}  = case PathComponents of
+					    [] ->
+						{"home", "index", []};
+					    [C] ->
+						{C,"index",[]};
+					    [C, A | Params]  ->
+						{C, A, Params}
+					end,
+	ControllerName.
+
+set_controller(Env,Value) ->
+    case lists:keysearch("controller_name",1,Env) of
+	{value,_} ->
+	    set_value("controller_name",Value,Env);
+	false ->
+	    [proplists:property({"controller_name", Value})|Env]
     end.
 
 get_value(Key, Env) ->
@@ -98,3 +124,27 @@ get_all_values(Key, Env) ->
 
 set_value(Key, Val, Env) ->
     lists:keyreplace(Key, 1, Env, {Key, Val}).
+
+%%
+%% @doc Set a 'flash' message for use in your template. All flash message are wr
+%%
+flash(Term,Env) ->
+	Flash = case get_session_data("beepbeep_flash",Env) of
+		undefined ->
+			[Term];
+		ExistingFlash ->
+			[Term|ExistingFlash]
+	end,
+	set_session_data(Env,"beepbeep_flash",Flash).
+
+%% Get and clear the flash
+get_flash(Env) ->
+	Sid = get_session_id(Env),
+	case get_session_data("beepbeep_flash",Env) of
+		undefined ->
+			%% No flash data
+			none;
+		Data ->
+			beepbeep_session_server:remove_session_data(Sid,"beepbeep_flash"),
+			Data
+	end.

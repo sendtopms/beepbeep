@@ -1,0 +1,19 @@
+{% extends "../base.html" %}
+{% block content %}
+		<div id="content">
+			<div class="container_12">
+				<div class="grid_8">
+ 					<h1>ErlyDTL</h1>
+					<p>
+						{{ for_now_refer_to_erlydtl_docs }} <a href="http://code.google.com/p/erlydtl/wiki/" title="{{ for_now_refer_to_erlydtl_docs }}">http://code.google.com/p/erlydtl/wiki/</a>
+					</p>
+				</div>
+				<div id="toc" class="grid_3">
+					{% include "toc.html" %}
+
+				</div>
+			</div>
+		</div>
+		<div class="clear">&nbsp;</div>
+
+{% endblock %}
