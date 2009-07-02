@@ -25,6 +25,8 @@ handle_request("index",[]) ->
 		,?TXT("link_roadmap")
 		,?TXT("link_faq")
 		,?TXT("framework_slogan")
+		,?TXT("download_instructions")
+
 							  ]};
 
 handle_request("show",[Year]) ->
@@ -36,7 +38,7 @@ handle_request("show",[Year]) ->
 %% If necessary, add these hooks:
 %% *DON'T FORGET TO EXPORT THEM AS NECESSARY*
 
-%% before_filter/1
+%% before_filter/0
 %%
 %% Should return one of:
 %% ok
@@ -50,7 +52,6 @@ handle_request("show",[Year]) ->
 %% {controller, ControllerName, ActionName, Args}
 %%
 before_filter() ->
-	io:format("~p~n", [Env]),
 	ok.
 
 %Env = "",

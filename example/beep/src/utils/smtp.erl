@@ -7,29 +7,23 @@
 -export([send/1]).
 
 send(Data) ->
+	spawn(fun() ->
 	case ssl:connect("smtp.gmail.com", 465, [{active, false}], 1000) of
 		{ok, Socket} ->
 			send1(Socket, Data);
 		{error, Reason} ->
-			io:format("Error: ~p~n", [Reason]),
-			spawn(
-				fun() ->
-						receive
-							after 1000 -> ?MODULE:send(Data)
-						end
-				end
-			)
-	end.
+			err(Reason, Data)
+	end end).
 
 send1(Socket, Data) ->
-    recv(Socket),
-    send(Socket, "HELO localhost"),
-    send(Socket, "AUTH LOGIN"),
-    send(Socket, binary_to_list(base64:encode("___@gmail.com"))),
-    send(Socket, binary_to_list(base64:encode("___password"))),
-    send(Socket, "MAIL FROM: <___@gmail.com>"),
-    send(Socket, "RCPT TO:<___@gmail.com>"),
-    send(Socket, "DATA"),
+    recv(Socket, Data),
+    send(Socket, "HELO localhost", Data),
+    send(Socket, "AUTH LOGIN", Data),
+    send(Socket, binary_to_list(base64:encode("___@gmail.com")), Data),
+    send(Socket, binary_to_list(base64:encode("password")), Data),
+    send(Socket, "MAIL FROM: <___@gmail.com>", Data),
+    send(Socket, "RCPT TO:<___@gmail.com>", Data),
+    send(Socket, "DATA", Data),
     send_no_receive(Socket, "From: <___@gmail.com>"),
     send_no_receive(Socket, "To: <___@gmail.com>"),
     send_no_receive(Socket, "Date: Tue, 15 Jan 2008 16:02:43 +0000"),
@@ -37,20 +31,35 @@ send1(Socket, Data) ->
     send_no_receive(Socket, ""),
     send_no_receive(Socket, Data),
     send_no_receive(Socket, ""),
-    send(Socket, "."),
-    send(Socket, "QUIT"),
+    send(Socket, ".", Data),
+    send(Socket, "QUIT", Data),
     ssl:close(Socket).
 
 send_no_receive(Socket, Data) ->
     ssl:send(Socket, Data ++ "\r\n").
 
 
-send(Socket, Data) ->
+send(Socket, Data, ActualData) ->
     ssl:send(Socket, Data ++ "\r\n"),
-    recv(Socket).
+    recv(Socket, ActualData).
 
-recv(Socket) ->
-    case ssl:recv(Socket, 0, 1000) of
- {ok, Return} -> io:format("~p~n", [Return]);
- {error, Reason} -> io:format("ERROR: ~p~n", [Reason])
-    end.
+recv(Socket, Data) ->
+	case ssl:recv(Socket, 0, 1000) of
+		{ok, Return} ->
+			io:format("~p~n", [Return]);
+		{error, Reason} ->
+			case Reason of
+			   closed -> ssl:close(Socket), err(closed, Data), exit(closed);
+			   _ -> io:format("ERROR: ~p~n", [Reason])
+			end
+	end.
+
+err(Reason, Data) ->
+	io:format("Error: ~p~n", [Reason]),
+	spawn(
+		fun() ->
+				receive
+					after 10000 -> ?MODULE:send(Data)
+				end
+		end
+	).

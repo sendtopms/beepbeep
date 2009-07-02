@@ -15,7 +15,7 @@ dump({Path, Err}) ->
 dump(Err) ->
 	io_lib:format("~p", [Err]).
 
-guess_error({_, erlydtl_parser, [Reason, [[OpenBracket, List, EndBracket]]]}) ->
+guess_error({_, erlydtl_parser, [Reason, [[_OpenBracket, List, _EndBracket]]]}) ->
 	Err = parser_error(List, []),
 	{erlydtl_parser, lists:flatten([Reason, Err])};
 guess_error({_, erlydtl_parser, L}) ->

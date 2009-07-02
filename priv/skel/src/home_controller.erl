@@ -16,7 +16,7 @@ handle_request("show",[Year]) ->
 %% If necessary, add these hooks:
 %% *DON'T FORGET TO EXPORT THEM AS NECESSARY*
 
-%% before_filter/1
+%% before_filter/0
 %%
 %% Should return one of:
 %% ok

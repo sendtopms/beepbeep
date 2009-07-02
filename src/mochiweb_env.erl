@@ -65,11 +65,11 @@ parse_element(server_protocol, Req) ->
     lists:flatten(io_lib:format("HTTP/~b.~b", [Maj, Min]));
 parse_element(method, Req) ->
     Req:get(method);
-parse_element(path_info,Req) ->
+parse_element(path_info, Req) ->
     Req:get(path);
 parse_element(remote_addr, Req) ->
     Req:get(peer);
-parse_element(beepbeep_params,Req) ->
+parse_element(beepbeep_params, Req) ->
     case Req:get(method) of
 	Method when Method =:= 'GET'; Method =:= 'HEAD' ->
 	    Req:parse_qs(); 

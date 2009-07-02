@@ -51,7 +51,7 @@ skelcopy(Src, DestDir, Name, LDst) ->
             io:format("~s/~n", [EDst]),
             lists:foreach(fun ("." ++ _) -> ok;
                               (F) ->
-                                  skelcopy(filename:join(Src, F), 
+                                  skelcopy(filename:join(Src, F),
                                            Dir,
                                            Name,
                                            LDst)
@@ -70,7 +70,7 @@ skelcopy(Src, DestDir, Name, LDst) ->
             io:format("ignored source file: ~p~n", [Src]),
             ok;
 	 {error, _} ->
-	    io:format("problem with ~p~n",[Src]),
+	    io:format("problem with ~p~n", [Src]),
 	    ok
     end.
 

@@ -8,12 +8,12 @@
 %% @spec path(Env) -> Path
 %% @doc return the path
 path(Env) ->
-    proplists:get_value("PATH_INFO",Env).
+    proplists:get_value("PATH_INFO", Env).
 
 %% @spec path_components(Env) -> []
 %% @doc return the path as an array parsed on the "/"
 path_components(Env) ->
-    string:tokens(path(Env),"/").
+    string:tokens(path(Env), "/").
 
 %% @spec server_software(Env) -> ServerSoftware
 %% @doc return the name of the server
@@ -52,42 +52,42 @@ get_all_headers(Env) ->
                         Hdrs
                 end, [], Env).
 
-get_param(Key,Env) ->
-	get_param(Key,Env,"").
-get_param(Key,Env,Default) ->
-    Params = proplists:get_value("beepbeep.data",Env),
-    proplists:get_value(Key,Params,Default).
+get_param(Key, Env) ->
+	get_param(Key, Env, "").
+get_param(Key, Env, Default) ->
+    Params = proplists:get_value("beepbeep.data", Env),
+    proplists:get_value(Key, Params, Default).
 
 get_session_id(Env) ->
-    proplists:get_value("beepbeep_sid",Env).
+    proplists:get_value("beepbeep_sid", Env).
 
-set_session_id(Value,Env) ->
-    case lists:keysearch("beepbeep_sid",1,Env) of
-	{value,_} ->
-	    set_value("beepbeep_sid",Value,Env);
+set_session_id(Value, Env) ->
+    case lists:keysearch("beepbeep_sid", 1, Env) of
+	{value, _} ->
+	    set_value("beepbeep_sid", Value, Env);
 	false ->
 	    [proplists:property({"beepbeep_sid", Value})|Env]
     end.
 
 %% Helpers for accessing Session Data
-set_session_data(Env,Key,Value) ->
+set_session_data(Env, Key, Value) ->
     Sid = get_session_id(Env),
-    beepbeep_session_server:set_session_data(Sid,Key,Value).
+    beepbeep_session_server:set_session_data(Sid, Key, Value).
 
 get_session_data(Env) ->
     Sid = get_session_id(Env),
     beepbeep_session_server:get_session_data(Sid).
 
 get_session_data(Key, Env) ->
-    proplists:get_value(Key,get_session_data(Env)).
+    proplists:get_value(Key, get_session_data(Env)).
 
 get_action(Env) ->
-    proplists:get_value("action_name",Env).
+    proplists:get_value("action_name", Env).
 
-set_action(Env,Value) ->
-    case lists:keysearch("action_name",1,Env) of
-	{value,_} ->
-	    set_value("action_name",Value,Env);
+set_action(Env, Value) ->
+    case lists:keysearch("action_name", 1, Env) of
+	{value, _} ->
+	    set_value("action_name", Value, Env);
 	false ->
 	    [proplists:property({"action_name", Value})|Env]
     end.
@@ -99,16 +99,16 @@ get_controller(Env) ->
 					    [] ->
 						{"home", "index", []};
 					    [C] ->
-						{C,"index",[]};
+						{C, "index", []};
 					    [C, A | Params]  ->
 						{C, A, Params}
 					end,
 	ControllerName.
 
-set_controller(Env,Value) ->
-    case lists:keysearch("controller_name",1,Env) of
-	{value,_} ->
-	    set_value("controller_name",Value,Env);
+set_controller(Env, Value) ->
+    case lists:keysearch("controller_name", 1, Env) of
+	{value, _} ->
+	    set_value("controller_name", Value, Env);
 	false ->
 	    [proplists:property({"controller_name", Value})|Env]
     end.
@@ -128,23 +128,23 @@ set_value(Key, Val, Env) ->
 %%
 %% @doc Set a 'flash' message for use in your template. All flash message are wr
 %%
-flash(Term,Env) ->
-	Flash = case get_session_data("beepbeep_flash",Env) of
+flash(Term, Env) ->
+	Flash = case get_session_data("beepbeep_flash", Env) of
 		undefined ->
 			[Term];
 		ExistingFlash ->
 			[Term|ExistingFlash]
 	end,
-	set_session_data(Env,"beepbeep_flash",Flash).
+	set_session_data(Env, "beepbeep_flash", Flash).
 
 %% Get and clear the flash
 get_flash(Env) ->
 	Sid = get_session_id(Env),
-	case get_session_data("beepbeep_flash",Env) of
+	case get_session_data("beepbeep_flash", Env) of
 		undefined ->
 			%% No flash data
 			none;
 		Data ->
-			beepbeep_session_server:remove_session_data(Sid,"beepbeep_flash"),
+			beepbeep_session_server:remove_session_data(Sid, "beepbeep_flash"),
 			Data
 	end.
