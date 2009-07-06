@@ -26,6 +26,9 @@ handle_request("index",[]) ->
 		,?TXT("link_faq")
 		,?TXT("framework_slogan")
 		,?TXT("download_instructions")
+		,?TXT("q_tutorials")
+		,?TXT("tutorials_description")
+		,{title, ?TXT2("welcome")}
 
 							  ]};
 

@@ -12,4 +12,5 @@ handle_request("index",[]) ->
 		 ?TXT("faq_title")
 		,?TXT("faq_to_be_filled")
 		,?TXT("faq_toc")
+		,{title, ?TXT2("faq")}
 							 ]}.

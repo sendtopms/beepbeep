@@ -14,6 +14,7 @@ handle_request("index",[]) ->
 		,?TXT("feature_session")
 		,?TXT("feature_filters")
 		,?TXT("feature_dtl")
+		,{title, ?TXT2("overview")}
 										]};
 
 handle_request("get-started",[]) ->
@@ -46,6 +47,7 @@ handle_request("get-started",[]) ->
 		,?TXT("primer_view_explanation")
 		,?TXT("primer_separation")
 		,?TXT("primer_hooks")
+		,{title, ?TXT2("get_started")}
 												 ]};
 
 
@@ -66,6 +68,7 @@ handle_request("innards",[]) ->
 		,?TXT("controller_before_render")
 		,?TXT("app_web_before_render")
 		,?TXT("the_end")
+		,{title, ?TXT2("how_stuff_works")}
 										 ]};
 
 handle_request("hooks",[]) ->
@@ -87,11 +90,13 @@ handle_request("hooks",[]) ->
 		,?TXT("hook_controller_before_filter")
 		,?TXT("hook_controller_before_render")
 		,?TXT("hook_app_web_before_render")
+		,{title, ?TXT2("hooks")}
 										]};
 
 handle_request("erlydtl",[]) ->
 	{render,"documentation/erlydtl.html",[
 		 ?TXT("for_now_refer_to_erlydtl_docs")
+		,{title, "ErlyDTL"}
 										]};
 
 handle_request("roadmap",[]) ->
@@ -103,6 +108,9 @@ handle_request("roadmap",[]) ->
 		,?TXT("yaws_integration")
 		,?TXT("pluggable_template_engines")
 		,?TXT("better_error_handling_customization")
+		,?TXT("django_middleware")
+		,?TXT("ewgi")
+		,{title, ?TXT2("roadmap")}
 										]}.
 
 before_render({render, View, Data, Options}) ->

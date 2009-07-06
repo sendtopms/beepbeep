@@ -19,4 +19,5 @@ handle_request("index",[]) ->
 		,?TXT("fork_dmitrii_dimandt")
 		,?TXT("get_development_snapshot")
 		,?TXT("then_get_started")
+		,{title, ?TXT2("download_instructions")}
 								  ]}.
