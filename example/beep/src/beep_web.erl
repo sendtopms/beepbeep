@@ -110,6 +110,8 @@ before_render({render, View, Data, Options}, Env) ->
 		,?TXT("menu_download")
 		,?TXT("menu_documentation")
 		,?TXT("menu_faq")
+		,?TXT("seo_keywords")
+		,?TXT("seo_description")
 	], Options}.
 %%
 %% error/2
