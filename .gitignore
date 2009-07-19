@@ -1,3 +1,5 @@
 *.beam
 *ebin/*
 .DS_Store
+nbproject
+nbproject/*

@@ -2,4 +2,4 @@ all:
 	(cd src;$(MAKE))
 
 clean:
-	rm -rf ./ebin/*	
+	(cd src;$(MAKE) clean)

@@ -59,7 +59,7 @@ get_param(Key, Env, Default) ->
     proplists:get_value(Key, Params, Default).
 
 get_session_id(Env) ->
-    proplists:get_value("beepbeep_sid", Env).
+    ewgi_api:find_data("beep.session_id", Env).
 
 set_session_id(Value, Env) ->
     case lists:keysearch("beepbeep_sid", 1, Env) of
@@ -82,7 +82,7 @@ get_session_data(Key, Env) ->
     proplists:get_value(Key, get_session_data(Env)).
 
 get_action(Env) ->
-    proplists:get_value("action_name", Env).
+    ewgi_api:find_data("beep.action", Env).
 
 set_action(Env, Value) ->
     case lists:keysearch("action_name", 1, Env) of

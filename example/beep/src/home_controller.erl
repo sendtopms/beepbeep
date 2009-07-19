@@ -12,6 +12,7 @@ handle_request("index",[]) ->
 		 ?TXT("buzzwords_to_get_started")
 		,?TXT("fast")
 		,?TXT("dtl")
+		,?TXT("buzzword_middleware")
 		,?TXT("q_a_microframework")
 		,?TXT("description_microframework")
 		,?TXT("q_how_it_works")
@@ -30,13 +31,7 @@ handle_request("index",[]) ->
 		,?TXT("tutorials_description")
 		,{title, ?TXT2("welcome")}
 
-							  ]};
-
-handle_request("show",[Year]) ->
-	Env = "",
-    Sid = beepbeep_args:get_session_id(Env),
-    Name = beepbeep_args:get_param("name",Env),
-    {render,"home/show.html",[{year,Year},{sid,Sid},{name,Name}]}.
+							  ]}.
 
 %% If necessary, add these hooks:
 %% *DON'T FORGET TO EXPORT THEM AS NECESSARY*

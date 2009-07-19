@@ -18,8 +18,9 @@ handle_request("new",[]) ->
 %% Pull post parameters from the form, insert into the db and
 %% redirect to the front page
 handle_request("create",[]) ->
-    Title = beepbeep_args:get_param("post_title",Env),
-    Body = beepbeep_args:get_param("post_body",Env),
+	PostData = ewgi_api:remote_user_data(Env),
+    Title = proplists:get_value("post_title",PostData),
+    Body = proplists:get_value("post_body",PostData),
 
     %% Example of validation. Require a Title
     if 

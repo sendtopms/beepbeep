@@ -13,7 +13,8 @@ stop() ->
     mochiweb_http:stop(?MODULE).
 
 loop(Req) ->
-	beepbeep:loop(Req, ?MODULE).
+	Mod = ewgi_mochiweb:new(beepbeep:loop([beepbeep_session, beepbeep])),
+    Mod:run(Req).
 
 %% If necessary, add these hooks:
 %% *DON'T FORGET TO EXPORT THEM AS NECESSARY*

@@ -9,8 +9,9 @@ handle_request("new",[]) ->
 
 %% Get the post params from the form and verify
 handle_request("create",[]) ->
-    Un = beepbeep_args:get_param("un",Env),
-    Pw = beepbeep_args:get_param("pw",Env),
+	PostData = ewgi_api:remote_user_data(Env),
+    Un = proplists:get_value("un",PostData),
+    Pw = proplists:get_value("pw",PostData),
 
     %% Check if the user entered the proper Username and Password. 
     %% In this case it's hard code - foo:foobar

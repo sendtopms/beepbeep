@@ -1,0 +1,113 @@
+{% extends "../base.html" %}
+{% block content %}
+		<div id="content">
+			<div class="container_12">
+				<div class="grid_8">
+ 					<h1>Middleware</h1>
+					<p>
+						{{ intro_to_middleware | linebreaksbr }}
+					</p>
+					<pre><code lang="erlang">
+%% Ctx — ewgi_context
+%% App — a reference to the next middleware module
+
+run(Ctx, App) ->
+   Ctx1 = modify_request(Ctx),
+   Ctx2 = App(Ctx1),
+   Ctx3 = modify_response(Ctx2),
+   Ctx3.
+
+run(Ctx, App, Options) ->
+   %% same thing, only with options for the middleware module itself.
+					</code></pre>
+					<p>
+						{{ intro_to_middleware_2 | linebreaksbr }}
+					</p>
+					<pre><code lang="erlang">
+start(Options) ->
+    Loop = fun (Req) ->
+                   ?MODULE:loop(Req)
+           end,
+    mochiweb_http:start([{name, ?MODULE}, {loop, Loop} | Options]).
+
+stop() ->
+    mochiweb_http:stop(?MODULE).
+
+loop(Req) ->
+	Mod = ewgi_mochiweb:new(beepbeep:loop([
+		beepbeep_session,    
+		beep_web_dispatch,   
+		{some_other_middleware_component, ["some", "options"]}
+		beepbeep
+	])),
+    Mod:run(Req).
+					</code></pre>
+					<p>
+						{{ intro_to_middleware_3 | linebreaksbr }}
+					</p>
+					<pre><code lang="erlang">
+-module(beep_web_dispatch).
+
+-export([run/2]).
+
+run({ewgi_context, Request, _} = Ctx, App) ->
+
+	%% obtain path info for further parsing
+	PathInfo = string:tokens(ewgi_api:path_info(Ctx), "/"),
+	Path = list_to_binary(PathInfo),
+
+	%% see if we already have locale data in our session
+	Session = ewgi_api:find_data("beep.session_id", Ctx),
+	SessionData = beepbeep_session_server:get_session_data(Session),
+
+	Language = case proplists:get_value("language", SessionData) of
+		undefined ->
+			"en-US";
+		Any ->
+			Any
+	end,
+
+	beepbeep_session_server:set_session_data(Session, "language", Language),
+
+	%% check to see if locale data is in the form of xx-XX
+	%% if not, redirect the user
+	%% if yes, replace URL with one without the locale and pass the request
+	%%    to the next middleware component
+
+	case Path of
+		&lt;&lt;>> ->
+			%% no locale, the request is for "/" (for the site root)
+			{ewgi_context, Request, {ewgi_response, {302, "Temporary redirect"}, [{"Location", "/" ++ Language ++ "/"}], "", undefined}};
+		&lt;&lt;A,B,$-,C,D>> ->
+			%% the request is for "/xx-XX/" (for the site root)
+			%% we have a language, set it
+			beepbeep_session_server:set_session_data(Session, "language", [A,B,$-,C,D]),
+			Ctx1 = ewgi_api:path_info("/", Ctx),
+			Ctx2 = ewgi_api:store_data("beep_web.language", [A,B,$-,C,D], Ctx1),
+			App(Ctx2);
+		&lt;&lt;A,B,$-,C,D,Rest/binary>> ->
+			%% the request is for "/xx-XX/controller/action" or similar
+			%% we have a language, set it
+			beepbeep_session_server:set_session_data(Session, "language", [A,B,$-,C,D]),
+			Ctx1 = ewgi_api:path_info("/" ++ string:join(tl(PathInfo), "/"), Ctx),
+			Ctx2 = ewgi_api:store_data("beep_web.language", [A,B,$-,C,D], Ctx1),
+			App(Ctx2);
+		_ ->
+			%% no locale, the request is for "/controller/action/"
+			{ewgi_context, Request, {ewgi_response, {302, "Temporary redirect"}, [{"Location", "/"++Language++"/" ++ string:join(PathInfo, "/")}], "", undefined}}
+	end.
+					</code></pre>
+					<p>
+						{{ intro_to_middleware_4 | linebreaksbr }}
+					</p>
+					<!--script src="http://gist.github.com/149595.js"></script-->
+				</div>
+				<div id="toc" class="grid_3">
+					{% include "toc.html" %}
+
+				</div>
+			</div>
+		</div>
+		<div class="clear">&nbsp;</div>
+
+{% endblock %}

@@ -111,6 +111,15 @@ handle_request("roadmap",[]) ->
 		,?TXT("django_middleware")
 		,?TXT("ewgi")
 		,{title, ?TXT2("roadmap")}
+										]};
+
+handle_request("middleware",[]) ->
+    {render,"documentation/middleware.html", [
+		  ?TXT("intro_to_middleware")
+		 ,?TXT("intro_to_middleware_2")
+		 ,?TXT("intro_to_middleware_3")
+		 ,?TXT("intro_to_middleware_4")
+		 ,{title, "Middleware"}
 										]}.
 
 before_render({render, View, Data, Options}) ->

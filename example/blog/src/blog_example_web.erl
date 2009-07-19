@@ -7,7 +7,6 @@
 -author('Dave Bryson <http://weblog.miceda.org>').
 
 -export([start/1, stop/0, loop/1]).
--include("beepbeep.hrl").
 
 start(Options) ->
     Loop = fun (Req) ->
@@ -19,4 +18,5 @@ stop() ->
     mochiweb_http:stop(?MODULE).
 
 loop(Req) ->
-	beepbeep:loop(Req, ?MODULE).
+	Mod = ewgi_mochiweb:new(beepbeep:loop([beepbeep_session, blog_example_parse_post, beepbeep])),
+    Mod:run(Req).

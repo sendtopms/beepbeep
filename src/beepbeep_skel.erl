@@ -26,7 +26,10 @@ skelcopy(DestDir, InName) ->
 	   filename:join([DestDir, Name, "deps", "erlydtl-src"])),
     ok = file:make_symlink(
 	   filename:join(filename:dirname(code:which(?MODULE)), "../deps/mochiweb"),
-	   filename:join([DestDir, Name, "deps", "mochiweb-src"])).
+	   filename:join([DestDir, Name, "deps", "mochiweb-src"])),
+    ok = file:make_symlink(
+	   filename:join(filename:dirname(code:which(?MODULE)), "../deps/ewgi"),
+	   filename:join([DestDir, Name, "deps", "ewgi-src"])).
     
     
 

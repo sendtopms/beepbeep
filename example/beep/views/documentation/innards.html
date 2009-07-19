@@ -17,36 +17,7 @@
 						<ul>
 							<li>{{ request_into_app | linebreaksbr }}</li>
 							<li>{{ app_web_loop | linebreaksbr }}</li>
-							<li>
-								{{ beepbeep_loop | linebreaksbr }}
-								<pre><code lang="erlang">
-[{"action_name","innards"},
-     {"beepbeep_sid","da79030d2d9c7c0461ec2192168d6815bd75c004"},
-     {"beepbeep.data",[]},
-     {"REMOTE_ADDR","127.0.0.1"},
-     {"PATH_INFO","/documentation/innards"},
-     {"REQUEST_METHOD",'GET'},
-     {"SERVER_PROTOCOL","HTTP/1.1"},
-     {"SERVER_NAME","localhost"},
-     {"SERVER_SOFTWARE","MochiWeb"},
-     {"HTTP_USER_AGENT",
-      "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_7; en-us) AppleWebKit/530.18 (KHTML, like Gecko) Version/4.0.1 Safari/530.18"},
-     {"HTTP_REFERER","http://localhost:8000/ru-RU/documentation/innards"},
-     {"HTTP_HOST","localhost:8000"},
-     {"HTTP_COOKIE",
-      "_beepbeep_session_id_=da79030d2d9c7c0461ec2192168d6815bd75c004"},
-     {"HTTP_CONNECTION","keep-alive"},
-     {"HTTP_CACHE_CONTROL","max-age=0"},
-     {"HTTP_ACCEPT_LANGUAGE","en-us"},
-     {"HTTP_ACCEPT_ENCODING","gzip, deflate"},
-     {"HTTP_ACCEPT",
-      "application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"}]
-
-								</pre></code>
-								{{ env_is_passed_on | linebreaksbr }}
-							</li>
 							<li>{{ call_to_dispatch | linebreaksbr }}</li>
-							<li>{{ app_web_preprocess | linebreaksbr }}</li>
 							<li>{{ get_controller | linebreaksbr }}</li>
 							<li>{{ app_web_before_filter | linebreaksbr }}</li>
 							<li>{{ controller_before_filter | linebreaksbr }}</li>

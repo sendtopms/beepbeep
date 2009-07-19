@@ -169,7 +169,9 @@ handle_call({reload}, _From, {Tab, FileTab}) ->
     {reply, ok, {Tab, FileTab}};
 
 handle_call({get, Key, Locale}, _From, {Tab, FileTab}) ->
-    Value = lookup(Tab, {Locale, Key}),
+	L = string:tokens(Locale, "-"),
+	L1 = string:join(L, "_"),
+    Value = lookup(Tab, {L1, Key}),
     {reply, Value, {Tab, FileTab}}.
 
 
