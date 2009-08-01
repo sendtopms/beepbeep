@@ -2,6 +2,7 @@ all:
 	(cd src;$(MAKE))
 	(cd deps/erlydtl/src;$(MAKE))
 	(cd deps/mochiweb/src;$(MAKE))
+	(cd deps/ewgi;$(MAKE))
 
 docs:
 	erl -pa `pwd`/ebin \
@@ -12,3 +13,4 @@ clean:
 	(cd src;$(MAKE) clean)
 	(cd deps/erlydtl/src;$(MAKE) clean)
 	(cd deps/mochiweb/src;$(MAKE) clean)
+	(cd deps/ewgi;$(MAKE) clean)
