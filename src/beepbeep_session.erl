@@ -16,5 +16,5 @@ run(Ctx, App) ->
 	{ewgi_context, Request, Response} = App(Ctx1),
 
 	SetCookieHeader = beepbeep_cookies:cookie(?BEEPBEEP_SID, SessionKey, [{path, "/"}]),
-	Headers = Response#ewgi_response.ewgi_header_list,
-	{ewgi_context, Request, Response#ewgi_response{ewgi_header_list = [SetCookieHeader] ++ Headers}}.
+	Ctx2 = ewgi_api:response_headers(SetCookieHeader, Ctx1),
+	Ctx2.
