@@ -208,7 +208,6 @@ render_template(ViewFile, Data) ->
     ModName = list_to_atom(Name1 ++ "_view"),
 
     Compile = erlydtl:compile(FullPathToFile, ModName),
-
 	case Compile of
 		{error, Error1} ->
 			beepbeep_error:render_error({FullPathToFile, Error1});

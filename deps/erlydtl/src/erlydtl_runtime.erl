@@ -2,16 +2,24 @@
 
 -compile(export_all).
 
-find_value(Key, L) when is_list(L) ->
+find_value(Key, Data) ->
+    Val = find_value1(Key,Data),
+    function_check(Val).
+
+fetch_value(Key, Data) ->
+    Val = fetch_value1(Key, Data),
+    function_check(Val).
+
+find_value1(Key, L) when is_list(L) ->
     proplists:get_value(Key, L);
-find_value(Key, {GBSize, GBData}) when is_integer(GBSize) ->
+find_value1(Key, {GBSize, GBData}) when is_integer(GBSize) ->
     case gb_trees:lookup(Key, {GBSize, GBData}) of
         {value, Val} ->
             Val;
         _ ->
             undefined
     end;
-find_value(Key, Tuple) when is_tuple(Tuple) ->
+find_value1(Key, Tuple) when is_tuple(Tuple) ->
     Module = element(1, Tuple),
     case Module of
         dict -> 
@@ -28,15 +36,29 @@ find_value(Key, Tuple) when is_tuple(Tuple) ->
                 _ ->
                     undefined
             end
-    end.
+    end;
 
-fetch_value(Key, Data) ->
+find_value1(Key, F) when is_function(F) ->
+    L = F(),
+    find_value(Key, L).
+
+fetch_value1(Key, Data) ->
     case find_value(Key, Data) of
         undefined ->
             throw({undefined_variable, Key});
         Val ->
-            Val
+           case is_function(Val) of
+               true ->
+                   Val();
+                _ ->
+                    Val
+           end
     end.
+
+function_check(Val) when is_function(Val) ->
+    function_check(Val());
+function_check(Val) ->
+    Val.
 
 are_equal(Arg1, Arg2) when Arg1 =:= Arg2 ->
     true;
