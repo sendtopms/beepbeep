@@ -72,6 +72,7 @@ before_render({render, View, Data, Options}, Env) ->
 		,?TXT("menu_faq")
 		,?TXT("seo_keywords")
 		,?TXT("seo_description")
+        ,{callable, fun() -> [{h, fun() -> "Hello, nurse" end}] end}
 	], Options}.
 %%
 %% error/2
