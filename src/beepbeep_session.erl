@@ -13,8 +13,8 @@ run(Ctx, App) ->
 	end,
 
 	Ctx1 = ewgi_api:store_data("beep.session_id", SessionKey, Ctx),
-	{ewgi_context, Request, Response} = App(Ctx1),
+	Ctx2 = App(Ctx1),
 
 	SetCookieHeader = beepbeep_cookies:cookie(?BEEPBEEP_SID, SessionKey, [{path, "/"}]),
-	Ctx2 = ewgi_api:response_headers(SetCookieHeader, Ctx1),
-	Ctx2.
+	Ctx3 = ewgi_api:response_headers([SetCookieHeader | ewgi_api:response_headers(Ctx2)], Ctx2),
+	Ctx3.

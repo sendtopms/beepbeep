@@ -50,7 +50,7 @@ loop(Modules) when is_list(Modules) ->
 
 -spec run(ewgi_context(), function()) -> ewgi_context().
 run({ewgi_context, Request, _Response} = C, App) ->
-	[{AppWebModule, _}] = lists:filter(
+    [{AppWebModule, _}] = lists:filter(
 		fun({T, _}) ->
 				T1 = atom_to_list(T),
 				Tokens = string:tokens(T1, "_"),
