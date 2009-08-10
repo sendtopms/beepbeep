@@ -22,7 +22,7 @@ find_value1(Key, {GBSize, GBData}) when is_integer(GBSize) ->
 find_value1(Key, Tuple) when is_tuple(Tuple) ->
     Module = element(1, Tuple),
     case Module of
-        dict -> 
+        dict ->
             case dict:find(Key, Tuple) of
                 {ok, Val} ->
                     Val;
@@ -74,6 +74,10 @@ are_equal([Arg1], Arg2) when is_list(Arg1) ->
     are_equal(Arg1, Arg2);
 are_equal(Arg1, [Arg2]) when is_list(Arg1) ->
     are_equal(Arg1, Arg2);
+are_equal(Arg1, Arg2) when is_atom(Arg1), is_list(Arg2) ->
+	 are_equal(atom_to_list(Arg1), Arg2);
+are_equal(Arg1, Arg2) when is_list(Arg1), is_atom(Arg2) ->
+	 are_equal(Arg1, atom_to_list(Arg2));
 are_equal(_, _) ->
     false.
 
