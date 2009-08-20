@@ -7,6 +7,7 @@
 %%====================================================================
 
 -module(http_method_handler).
+-author('Senthilkumar Peelikkampatti <http://pmsenthilkumar.blogspot.com/>').
 
 
 -export([default_file_handler/2, default_file_handler_1/3, parse_post/2, parse_data/1]).

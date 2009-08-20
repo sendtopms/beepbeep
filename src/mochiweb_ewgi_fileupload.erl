@@ -1,4 +1,4 @@
--module(mochi_fileupload_curry, [Ctx]).
+-module(mochiweb_ewgi_fileupload, [Ctx]).
 -author('Senthilkumar Peelikkampatti <http://pmsenthilkumar.blogspot.com/>').
 
 -export([recv/1, get_header_value/1]).
